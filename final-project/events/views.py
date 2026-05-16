@@ -17,7 +17,7 @@ from .throttles import RegistrationBurstThrottle
 
 EVENTS_CACHE_KEY = 'events_list'
 STATS_CACHE_KEY = 'events_stats'
-CACHE_TTL = 60 * 5  # 5 minutes
+CACHE_TTL = 60 * 5             
 
 
 class CategoryViewSet(viewsets.ReadOnlyModelViewSet):

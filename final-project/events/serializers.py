@@ -75,11 +75,11 @@ class RegistrationSerializer(serializers.ModelSerializer):
         request = self.context['request']
         event = self.context['event']
 
-        # Check duplicate
+                         
         if Registration.objects.filter(user=request.user, event=event).exists():
             raise serializers.ValidationError("You are already registered for this event.")
 
-        # Check capacity
+                        
         if event.is_full:
             raise serializers.ValidationError("This event is full.")
 
