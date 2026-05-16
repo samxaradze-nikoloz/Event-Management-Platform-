@@ -92,7 +92,8 @@ USE_TZ = True
 
                 
 STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_DIRS = [BASE_DIR / 'static']   # where your css/js files ARE
+STATIC_ROOT = BASE_DIR / 'staticfiles'     # where collectstatic puts them
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
@@ -168,5 +169,7 @@ SPECTACULAR_SETTINGS = {
     'DESCRIPTION': 'API for managing events, registrations, and reviews',
     'VERSION': '1.0.0',
 }
-
-CORS_ALLOW_ALL_ORIGINS = True
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:8080",
+    "http://127.0.0.1:8080",
+]

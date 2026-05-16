@@ -5,6 +5,8 @@ from rest_framework.decorators import action
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from rest_framework.response import Response
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
 
 from .filters import EventFilter
 from .models import Category, Tag, Event, Registration, Review, EventMedia
@@ -152,3 +154,6 @@ class ReviewViewSet(viewsets.ModelViewSet):
         context = super().get_serializer_context()
         context['event'] = Event.objects.get(pk=self.kwargs['event_pk'])
         return context
+@login_required
+def create_event(request):
+    return render(request, 'events/create.html')

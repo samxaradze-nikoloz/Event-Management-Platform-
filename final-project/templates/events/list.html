@@ -1,0 +1,128 @@
+{% extends "notifications/base.html" %}
+{% load static %}
+
+{% block title %}Browse Events — Eventflow{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'events/css/main.css' %}"/>
+{% endblock %}
+
+{% block content %}
+
+<!-- Page header -->
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Browse Events</h1>
+    <p class="page-sub">Discover and register for upcoming events</p>
+  </div>
+  {% if user.is_authenticated and user.role == 'organizer' %}
+    <a href="/events/create/" class="btn btn-primary">+ Create Event</a>
+  {% endif %}
+</div>
+
+<!-- Filters -->
+<div class="filter-bar">
+  <form method="get" action="/events/" id="filter-form">
+    <div class="filter-inner">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input class="form-control search-input" type="text" name="search"
+               placeholder="Search by title or description..."
+               value="{{ request.GET.search|default:'' }}"/>
+      </div>
+
+      <select class="form-control filter-select" name="status" onchange="this.form.submit()">
+        <option value="">All statuses</option>
+        <option value="published" {% if request.GET.status == 'published' %}selected{% endif %}>Published</option>
+        <option value="draft"     {% if request.GET.status == 'draft'     %}selected{% endif %}>Draft</option>
+        <option value="cancelled" {% if request.GET.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+      </select>
+
+      <select class="form-control filter-select" name="event_type" onchange="this.form.submit()">
+        <option value="">All types</option>
+        <option value="online"  {% if request.GET.event_type == 'online'  %}selected{% endif %}>Online</option>
+        <option value="offline" {% if request.GET.event_type == 'offline' %}selected{% endif %}>Offline</option>
+      </select>
+
+      <select class="form-control filter-select" name="category" onchange="this.form.submit()">
+        <option value="">All categories</option>
+        {% for cat in categories %}
+          <option value="{{ cat.id }}" {% if request.GET.category == cat.id|stringformat:'s' %}selected{% endif %}>{{ cat.name }}</option>
+        {% endfor %}
+      </select>
+
+      <button type="submit" class="btn btn-ghost btn-sm">Search</button>
+      <a href="/events/" class="btn btn-ghost btn-sm">Clear</a>
+    </div>
+  </form>
+</div>
+
+<!-- Events grid -->
+{% if events %}
+  <div class="events-grid">
+    {% for event in events %}
+      <a href="/events/{{ event.id }}/" class="event-card">
+        <div class="event-card-banner">
+          {% if event.event_type == 'online' %}🖥️{% else %}📍{% endif %}
+        </div>
+        <div class="event-card-body">
+          <div class="event-card-top">
+            <span class="badge badge-{{ event.status }}">{{ event.status }}</span>
+            <span class="badge badge-{{ event.event_type }}">{{ event.event_type }}</span>
+          </div>
+          <h3 class="event-card-title">{{ event.title }}</h3>
+          <p class="event-card-desc">{{ event.description|truncatechars:90 }}</p>
+          <div class="event-card-meta">
+            <span>📅 {{ event.start_date|date:"M d, Y" }}</span>
+            {% if event.location %}<span>📌 {{ event.location }}</span>{% endif %}
+            <span>👥 {{ event.registration_count }}/{{ event.max_attendees }}</span>
+          </div>
+          <div class="spots-bar-wrap">
+            <div class="spots-bar">
+              <div class="spots-fill" style="width:{% widthratio event.registration_count event.max_attendees 100 %}%"></div>
+            </div>
+          </div>
+          {% if event.category %}
+            <div class="event-card-footer">
+              <span class="tag">{{ event.category.name }}</span>
+              {% if event.is_full %}
+                <span class="badge badge-cancelled">Full</span>
+              {% else %}
+                <span class="spots-left">{{ event.available_spots }} spots left</span>
+              {% endif %}
+            </div>
+          {% endif %}
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+
+  <!-- Pagination -->
+  {% if is_paginated %}
+    <div class="pagination">
+      {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode }}" class="btn btn-ghost btn-sm">← Previous</a>
+      {% endif %}
+      <span class="page-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}&{{ request.GET.urlencode }}" class="btn btn-ghost btn-sm">Next →</a>
+      {% endif %}
+    </div>
+  {% endif %}
+
+{% else %}
+  <div class="empty-state">
+    <div class="empty-icon">🎪</div>
+    <h3>No events found</h3>
+    <p>Try adjusting your filters or search terms.</p>
+    {% if user.is_authenticated and user.role == 'organizer' %}
+      <a href="/events/create/" class="btn btn-primary" style="margin-top:16px">Create the first event</a>
+    {% endif %}
+  </div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'events/js/main.js' %}"></script>
+{% endblock %}

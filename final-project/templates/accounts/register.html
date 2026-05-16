@@ -1,0 +1,89 @@
+{% extends "notifications/base.html" %}
+{% load static %}
+
+{% block title %}Register — Eventflow{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'accounts/css/main.css' %}"/>
+{% endblock %}
+
+{% block content %}
+<div class="auth-wrap">
+  <div class="auth-card">
+
+    <div class="auth-header">
+      <h1 class="auth-title">Create account</h1>
+      <p class="auth-sub">Join Eventflow and start discovering events</p>
+    </div>
+
+    <form method="post" action="/accounts/register/" id="register-form">
+      {% csrf_token %}
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="username">Username</label>
+          <input class="form-control" type="text" id="username" name="username"
+                 placeholder="john_doe" required
+                 value="{{ form.username.value|default:'' }}"/>
+          {% if form.username.errors %}
+            <div class="form-error">{{ form.username.errors.0 }}</div>
+          {% endif %}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="email">Email</label>
+          <input class="form-control" type="email" id="email" name="email"
+                 placeholder="you@email.com" required
+                 value="{{ form.email.value|default:'' }}"/>
+          {% if form.email.errors %}
+            <div class="form-error">{{ form.email.errors.0 }}</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="role">I want to</label>
+        <select class="form-control" id="role" name="role" required>
+          <option value="attendee" {% if form.role.value == 'attendee' %}selected{% endif %}>Attend events</option>
+          <option value="organizer" {% if form.role.value == 'organizer' %}selected{% endif %}>Organize events</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="password">Password</label>
+        <input class="form-control" type="password" id="password" name="password"
+               placeholder="Min. 8 characters" required autocomplete="new-password"/>
+        {% if form.password.errors %}
+          <div class="form-error">{{ form.password.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="bio">Bio <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+        <textarea class="form-control" id="bio" name="bio"
+                  placeholder="Tell us a bit about yourself...">{{ form.bio.value|default:'' }}</textarea>
+      </div>
+
+      {% if form.non_field_errors %}
+        <div class="toast toast-error" style="margin-bottom:16px;">
+          {{ form.non_field_errors.0 }}
+        </div>
+      {% endif %}
+
+      <button type="submit" class="btn btn-primary btn-full" id="register-btn">
+        Create account
+      </button>
+    </form>
+
+    <hr class="divider"/>
+
+    <p class="auth-switch">
+      Already have an account? <a href="/accounts/login/">Sign in</a>
+    </p>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'accounts/js/main.js' %}"></script>
+{% endblock %}

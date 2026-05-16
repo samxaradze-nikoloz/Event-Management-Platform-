@@ -9,8 +9,9 @@ redis
 django-redis
 Pillow
 psycopg2-binary
-python-dotenv
 pytest-django
 pytest
 factory-boy
 django-cors-headers
+gunicorn
+python-dotenv

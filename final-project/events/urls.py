@@ -1,6 +1,8 @@
 from rest_framework_nested import routers
 from django.urls import path, include
 from .views import EventViewSet, RegistrationViewSet, ReviewViewSet, CategoryViewSet, TagViewSet
+from django.urls import path
+from . import views
 
 router = routers.DefaultRouter()
 router.register(r'events', EventViewSet, basename='events')
@@ -14,4 +16,5 @@ events_router.register(r'reviews', ReviewViewSet, basename='event-reviews')
 urlpatterns = [
     path('', include(router.urls)),
     path('', include(events_router.urls)),
+    path('create/', views.create_event, name='create-event'),
 ]

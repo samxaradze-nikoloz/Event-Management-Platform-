@@ -1,0 +1,180 @@
+{% extends "notifications/base.html" %}
+{% load static %}
+
+{% block title %}{{ event.title }} — Eventflow{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'events/css/main.css' %}"/>
+{% endblock %}
+
+{% block content %}
+
+<div class="detail-wrap">
+
+  <!-- LEFT: main content -->
+  <div class="detail-main">
+
+    <!-- Back -->
+    <a href="/events/" class="back-link">← Back to events</a>
+
+    <!-- Header -->
+    <div class="detail-header">
+      <div class="detail-badges">
+        <span class="badge badge-{{ event.status }}">{{ event.status }}</span>
+        <span class="badge badge-{{ event.event_type }}">{{ event.event_type }}</span>
+        {% if event.category %}<span class="tag">{{ event.category.name }}</span>{% endif %}
+      </div>
+      <h1 class="detail-title">{{ event.title }}</h1>
+      <div class="detail-meta">
+        <span>📅 {{ event.start_date|date:"F j, Y · g:i A" }} → {{ event.end_date|date:"g:i A" }}</span>
+        {% if event.location %}<span>📌 {{ event.location }}</span>{% endif %}
+        <span>👤 Organized by <strong>{{ event.organizer.username }}</strong></span>
+      </div>
+    </div>
+
+    <!-- Description -->
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-title">About this event</div>
+      <p class="detail-desc">{{ event.description }}</p>
+    </div>
+
+    <!-- Tags -->
+    {% if event.tags.all %}
+      <div class="card" style="margin-bottom:20px;">
+        <div class="card-title">Tags</div>
+        <div class="tag-list">
+          {% for tag in event.tags.all %}
+            <span class="tag">{{ tag.name }}</span>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    <!-- Reviews -->
+    <div class="card">
+      <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;">
+        Reviews
+        {% if user_registration.status == 'confirmed' and not user_has_reviewed %}
+          <button class="btn btn-outline btn-sm" id="review-toggle">+ Write review</button>
+        {% endif %}
+      </div>
+
+      <!-- Review form (hidden by default) -->
+      {% if user_registration.status == 'confirmed' and not user_has_reviewed %}
+        <div id="review-form-wrap" style="display:none;margin-bottom:20px;">
+          <form method="post" action="/events/{{ event.id }}/reviews/">
+            {% csrf_token %}
+            <div class="form-group">
+              <label class="form-label">Rating</label>
+              <div class="star-rating" id="star-rating">
+                {% for i in "12345" %}
+                  <span class="star" data-val="{{ forloop.counter }}">★</span>
+                {% endfor %}
+              </div>
+              <input type="hidden" name="rating" id="rating-input" value=""/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Comment</label>
+              <textarea class="form-control" name="comment" rows="3" placeholder="Share your experience..." required></textarea>
+            </div>
+            <div style="display:flex;gap:10px;">
+              <button type="submit" class="btn btn-primary btn-sm">Submit review</button>
+              <button type="button" class="btn btn-ghost btn-sm" id="review-cancel">Cancel</button>
+            </div>
+          </form>
+        </div>
+      {% endif %}
+
+      <!-- Review list -->
+      {% if reviews %}
+        <div class="review-list">
+          {% for review in reviews %}
+            <div class="review-item">
+              <div class="review-header">
+                <div class="avatar">{{ review.user.username|first|upper }}</div>
+                <div>
+                  <div class="review-author">{{ review.user.username }}</div>
+                  <div class="review-date">{{ review.created_at|date:"M d, Y" }}</div>
+                </div>
+                <div class="review-stars">
+                  {% for i in "12345" %}
+                    <span class="star-display {% if forloop.counter <= review.rating %}filled{% endif %}">★</span>
+                  {% endfor %}
+                </div>
+              </div>
+              <p class="review-comment">{{ review.comment }}</p>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p style="color:var(--muted);font-size:14px;">No reviews yet. Be the first!</p>
+      {% endif %}
+    </div>
+
+  </div>
+
+  <!-- RIGHT: sidebar -->
+  <div class="detail-sidebar">
+
+    <!-- Capacity card -->
+    <div class="card" style="margin-bottom:16px;">
+      <div class="card-title">Availability</div>
+      <div class="capacity-nums">
+        <span class="cap-current">{{ event.registration_count }}</span>
+        <span class="cap-sep">/</span>
+        <span class="cap-total">{{ event.max_attendees }}</span>
+      </div>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:10px;">registered attendees</p>
+      <div class="spots-bar" style="margin-bottom:12px;">
+        <div class="spots-fill" style="width:{% widthratio event.registration_count event.max_attendees 100 %}%;"></div>
+      </div>
+
+      {% if user.is_authenticated %}
+        {% if user_registration %}
+          {% if user_registration.status == 'confirmed' %}
+            <div class="toast toast-success" style="margin-bottom:12px;">✓ You are registered</div>
+            <form method="post" action="/events/{{ event.id }}/registrations/{{ user_registration.id }}/cancel/">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-danger btn-full btn-sm">Cancel registration</button>
+            </form>
+          {% elif user_registration.status == 'pending' %}
+            <div class="toast toast-warning">⏳ Registration pending</div>
+          {% elif user_registration.status == 'cancelled' %}
+            <div class="toast toast-error">Registration cancelled</div>
+          {% endif %}
+        {% elif event.is_full %}
+          <button class="btn btn-ghost btn-full" disabled>Event is full</button>
+        {% elif event.status == 'published' %}
+          <form method="post" action="/events/{{ event.id }}/registrations/">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary btn-full">Register for event</button>
+          </form>
+        {% endif %}
+      {% else %}
+        <a href="/accounts/login/" class="btn btn-outline btn-full">Login to register</a>
+      {% endif %}
+    </div>
+
+    <!-- Organizer actions -->
+    {% if user == event.organizer %}
+      <div class="card">
+        <div class="card-title">Manage event</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <a href="/events/{{ event.id }}/edit/" class="btn btn-outline btn-sm btn-full">✏️ Edit event</a>
+          <form method="post" action="/events/{{ event.id }}/delete/">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger btn-sm btn-full"
+                    onclick="return confirm('Delete this event?')">🗑️ Delete event</button>
+          </form>
+        </div>
+      </div>
+    {% endif %}
+
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'events/js/main.js' %}"></script>
+{% endblock %}
