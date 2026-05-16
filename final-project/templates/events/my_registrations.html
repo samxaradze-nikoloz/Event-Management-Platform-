@@ -1,0 +1,87 @@
+{% extends "notifications/base.html" %}
+{% load static %}
+
+{% block title %}My Registrations — Eventflow{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'events/main.css' %}"/>
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">My Registrations</h1>
+    <p class="page-sub">Events you've registered for</p>
+  </div>
+  <a href="/events/" class="btn btn-ghost">← Browse Events</a>
+</div>
+
+<!-- Stats -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-value">{{ total_events }}</div>
+    <div class="stat-label">Total Registrations</div>
+  </div>
+</div>
+
+<!-- Registrations list -->
+{% if registrations %}
+  <div class="registrations-list">
+    {% for registration in registrations %}
+      <div class="registration-card">
+        <div class="registration-header">
+          <div>
+            <h3 class="registration-title">
+              <a href="/events/{{ registration.event.id }}/">{{ registration.event.title }}</a>
+            </h3>
+            <p class="registration-date">
+              Registered on {{ registration.registered_at|date:"M d, Y" }}
+            </p>
+          </div>
+          <span class="badge badge-{{ registration.status }}">{{ registration.status }}</span>
+        </div>
+        
+        <div class="registration-content">
+          <p class="registration-desc">{{ registration.event.description|truncatechars:150 }}</p>
+          
+          <div class="registration-meta">
+            <span>📅 {{ registration.event.start_date|date:"F j, Y \a\t H:i" }}</span>
+            {% if registration.event.location %}
+              <span>📍 {{ registration.event.location }}</span>
+            {% endif %}
+            <span>👤 {{ registration.event.organizer.username }}</span>
+          </div>
+        </div>
+        
+        <div class="registration-footer">
+          <a href="/events/{{ registration.event.id }}/" class="btn btn-primary btn-sm">
+            View Event
+          </a>
+          <form method="post" action="/events/{{ registration.event.id }}/registrations/{{ registration.id }}/cancel/"
+                style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger btn-sm"
+                    onclick="return confirm('Cancel this registration?')">
+              Cancel
+            </button>
+          </form>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+  
+{% else %}
+  <div class="empty-state">
+    <div class="empty-icon">🎪</div>
+    <h3>No registrations yet</h3>
+    <p>You haven't registered for any events. Start exploring and find one that interests you!</p>
+    <a href="/events/" class="btn btn-primary" style="margin-top:16px">Browse Events</a>
+  </div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'events/js/main.js' %}"></script>
+{% endblock %}

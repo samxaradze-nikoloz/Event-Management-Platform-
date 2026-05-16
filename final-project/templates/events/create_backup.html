@@ -4,8 +4,8 @@
 {% block title %}Create Event — Eventflow{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'events/main.css' %}"/>
-<link rel="stylesheet" href="{% static 'events/create.css' %}"/>
+<link rel="stylesheet" href="{% static 'events/css/main.css' %}"/>
+<link rel="stylesheet" href="{% static 'events/css/create.css' %}"/>
 {% endblock %}
 
 {% block content %}
@@ -14,11 +14,11 @@
 
   <div class="create-header">
     <a href="/events/" class="back-link">← Back to events</a>
-    <h1 class="page-title">Create New Event</h1>
+    <h1 class="page-title">Create new event</h1>
     <p class="page-sub">Fill in the details below to publish your event</p>
   </div>
 
-  <form method="post" action="/events/create/" enctype="multipart/form-data">
+  <form method="post" action="/events/create/" enctype="multipart/form-data" id="create-form">
     {% csrf_token %}
 
     <div class="create-grid">
@@ -27,11 +27,11 @@
       <div class="create-main">
 
         <!-- Basic info -->
-        <div class="card">
-          <div class="card-title">Basic Information</div>
+        <div class="card" style="margin-bottom:20px;">
+          <div class="card-title">Basic information</div>
 
           <div class="form-group">
-            <label class="form-label" for="title">Event Title *</label>
+            <label class="form-label" for="title">Event title *</label>
             <input class="form-control" type="text" id="title" name="title"
                    placeholder="e.g. PyCon Georgia 2025" required/>
           </div>
@@ -40,7 +40,7 @@
             <label class="form-label" for="description">Description *</label>
             <textarea class="form-control" id="description" name="description"
                       rows="5" placeholder="Describe your event in detail..." required></textarea>
-            <div class="form-hint">Share what makes your event special</div>
+            <div class="form-hint">Markdown is supported.</div>
           </div>
 
           <div class="form-row">
@@ -65,32 +65,34 @@
         </div>
 
         <!-- Date & Location -->
-        <div class="card">
-          <div class="card-title">Date & Location</div>
+        <div class="card" style="margin-bottom:20px;">
+          <div class="card-title">Date & location</div>
 
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label" for="start_date">Start Date & Time *</label>
+              <label class="form-label" for="start_date">Start date & time *</label>
               <input class="form-control" type="datetime-local" id="start_date" name="start_date" required/>
             </div>
             <div class="form-group">
-              <label class="form-label" for="end_date">End Date & Time *</label>
+              <label class="form-label" for="end_date">End date & time *</label>
               <input class="form-control" type="datetime-local" id="end_date" name="end_date" required/>
             </div>
           </div>
 
           <div class="form-group">
-            <label class="form-label">Event Type *</label>
+            <label class="form-label">Event type *</label>
             <div class="type-toggle">
               <label class="type-option">
-                <input type="radio" name="event_type" value="online" checked/>
+                <input type="radio" name="event_type" value="online"
+                       {% if form.event_type.value != 'offline' %}checked{% endif %}/>
                 <span class="type-label">
                   <span class="type-icon">🖥️</span>
                   <span class="type-text">Online</span>
                 </span>
               </label>
               <label class="type-option">
-                <input type="radio" name="event_type" value="offline"/>
+                <input type="radio" name="event_type" value="offline"
+                       {% if form.event_type.value == 'offline' %}checked{% endif %}/>
                 <span class="type-label">
                   <span class="type-icon">📍</span>
                   <span class="type-text">Offline</span>
@@ -99,16 +101,18 @@
             </div>
           </div>
 
-          <div class="form-group" id="location-group" style="display:none;">
+          <div class="form-group" id="location-group">
             <label class="form-label" for="location">Location</label>
             <input class="form-control" type="text" id="location" name="location"
-                   placeholder="e.g. Tbilisi, Georgia"/>
+                   placeholder="e.g. Tbilisi, Georgia / Zoom link"
+                   value="{{ form.location.value|default:'' }}"/>
+            {% if form.location.errors %}<div class="form-error">{{ form.location.errors.0 }}</div>{% endif %}
           </div>
 
         </div>
 
         <!-- Tags -->
-        <div class="card">
+        <div class="card" style="margin-bottom:20px;">
           <div class="card-title">Tags</div>
           <div class="tags-wrap" id="tags-wrap">
             {% for tag in tags %}
@@ -118,7 +122,7 @@
               </label>
             {% endfor %}
           </div>
-          <div class="form-hint">Select all that apply</div>
+          <div class="form-hint" style="margin-top:10px;">Select all that apply.</div>
         </div>
 
       </div>
@@ -127,25 +131,25 @@
       <div class="create-sidebar">
 
         <!-- Capacity -->
-        <div class="card">
+        <div class="card" style="margin-bottom:16px;">
           <div class="card-title">Capacity</div>
           <div class="form-group">
-            <label class="form-label" for="max_attendees">Max Attendees *</label>
+            <label class="form-label" for="max_attendees">Max attendees *</label>
             <input class="form-control" type="number" id="max_attendees" name="max_attendees"
                    min="1" placeholder="e.g. 100" required value="100"/>
           </div>
-          <div class="capacity-preview">
-            <span class="cap-num" id="cap-display">100</span>
+          <div class="capacity-preview" id="capacity-preview">
+            <span class="cap-num" id="cap-display">—</span>
             <span class="cap-label">spots available</span>
           </div>
         </div>
 
         <!-- Media -->
-        <div class="card">
-          <div class="card-title">Cover Image</div>
+        <div class="card" style="margin-bottom:16px;">
+          <div class="card-title">Cover image</div>
           <label class="upload-zone" for="media-input" id="upload-zone">
             <span class="upload-icon">📁</span>
-            <span class="upload-text" id="upload-text">Click to upload</span>
+            <span class="upload-text" id="upload-text">Click to upload image</span>
             <span class="upload-hint">PNG, JPG up to 5MB</span>
           </label>
           <input type="file" id="media-input" name="media" accept="image/*"
@@ -156,12 +160,12 @@
         <!-- Submit -->
         <div class="card">
           <button type="submit" name="action" value="publish"
-                  class="btn btn-primary btn-full">
-            🚀 Publish Event
+                  class="btn btn-primary btn-full" style="margin-bottom:10px;" id="submit-btn">
+            🚀 Publish event
           </button>
           <button type="submit" name="action" value="draft"
-                  class="btn btn-ghost btn-full" style="margin-top:10px;">
-            💾 Save as Draft
+                  class="btn btn-ghost btn-full">
+            💾 Save as draft
           </button>
           <hr class="divider"/>
           <a href="/events/" class="btn btn-ghost btn-full">Cancel</a>
@@ -177,48 +181,6 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
-  // Update capacity preview
-  const maxAttendeesInput = document.getElementById('max_attendees');
-  const capDisplay = document.getElementById('cap-display');
-  
-  function updateCapacity() {
-    capDisplay.textContent = maxAttendeesInput.value || '—';
-  }
-  
-  maxAttendeesInput.addEventListener('input', updateCapacity);
-  
-  // Preview image
-  function previewImage(input) {
-    const preview = document.getElementById('img-preview');
-    const uploadText = document.getElementById('upload-text');
-    
-    if (input.files && input.files[0]) {
-      const reader = new FileReader();
-      
-      reader.onload = function(e) {
-        preview.src = e.target.result;
-        preview.style.display = 'block';
-        uploadText.textContent = input.files[0].name;
-      };
-      
-      reader.readAsDataURL(input.files[0]);
-    }
-  }
-  
-  // Toggle location field based on event type
-  const eventTypeRadios = document.querySelectorAll('input[name="event_type"]');
-  const locationGroup = document.getElementById('location-group');
-  
-  function toggleLocationField() {
-    const isOffline = document.querySelector('input[name="event_type"]:checked').value === 'offline';
-    locationGroup.style.display = isOffline ? 'block' : 'none';
-  }
-  
-  eventTypeRadios.forEach(radio => {
-    radio.addEventListener('change', toggleLocationField);
-  });
-  
-  toggleLocationField();
-</script>
+<script src="{% static 'events/js/main.js' %}"></script>
+<script src="{% static 'events/js/create.js' %}"></script>
 {% endblock %}

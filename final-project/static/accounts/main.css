@@ -1,71 +1,88 @@
 /* ── Auth Layout ── */
 .auth-wrap {
-  min-height: calc(100vh - 180px);
+  min-height: calc(100vh - 200px);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40px 16px;
+  padding: 60px 16px;
 }
 
 .auth-card {
   width: 100%;
-  max-width: 460px;
+  max-width: 500px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 18px;
-  padding: 36px 32px;
-  box-shadow: 0 4px 32px rgba(108,71,255,0.07);
+  border-radius: 16px;
+  padding: 40px;
+  box-shadow: 0 8px 32px rgba(108, 71, 255, 0.1);
+  backdrop-filter: blur(10px);
 }
 
 .auth-header {
-  margin-bottom: 28px;
+  margin-bottom: 32px;
 }
 
 .auth-title {
   font-family: var(--font-display);
-  font-size: 26px;
+  font-size: 28px;
   font-weight: 800;
   color: var(--text);
   letter-spacing: -0.5px;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .auth-sub {
-  font-size: 14px;
+  font-size: 15px;
   color: var(--muted);
+  line-height: 1.5;
 }
 
 .auth-switch {
   text-align: center;
   font-size: 14px;
   color: var(--muted);
+  margin-top: 20px;
+}
+
+.auth-switch a {
+  color: var(--accent);
+  font-weight: 500;
 }
 
 /* ── Password strength indicator ── */
 .strength-bar {
-  height: 4px;
-  border-radius: 2px;
+  height: 6px;
+  border-radius: 3px;
   background: var(--border);
-  margin-top: 8px;
+  margin-top: 10px;
   overflow: hidden;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 .strength-fill {
   height: 100%;
-  border-radius: 2px;
-  transition: width 0.3s, background 0.3s;
+  border-radius: 3px;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s;
   width: 0%;
 }
 .strength-weak   { background: var(--red);   width: 33%; }
 .strength-medium { background: var(--amber); width: 66%; }
 .strength-strong { background: var(--green); width: 100%; }
-.strength-label  { font-size: 11px; color: var(--muted); margin-top: 4px; }
+.strength-label  { 
+  font-size: 12px; 
+  color: var(--muted); 
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 500;
+}
 
 /* ── Loading spinner on button ── */
-.btn-loading { opacity: 0.7; pointer-events: none; }
+.btn-loading { opacity: 0.8; pointer-events: none; }
 .btn-loading::after {
   content: '';
   width: 14px; height: 14px;
-  border: 2px solid rgba(255,255,255,0.4);
+  border: 2px solid rgba(255,255,255,0.3);
   border-top-color: #fff;
   border-radius: 50%;
   display: inline-block;
@@ -73,3 +90,136 @@
   margin-left: 8px;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Form improvements ── */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+textarea,
+select {
+  padding: 11px 14px;
+  background: var(--surface-light);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 14px;
+  transition: all 0.25s ease;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--muted);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--surface);
+  box-shadow: 0 0 0 3px rgba(108, 71, 255, 0.12);
+}
+
+input:disabled,
+textarea:disabled,
+select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ── Profile page ── */
+.profile-wrap {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.profile-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: var(--accent-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  flex-shrink: 0;
+}
+
+.profile-info h1 {
+  font-size: 26px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.profile-info p {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.profile-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.profile-section h2 {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* ── Mobile responsive ── */
+@media (max-width: 600px) {
+  .auth-card {
+    padding: 28px 20px;
+  }
+  
+  .auth-title {
+    font-size: 24px;
+  }
+  
+  .profile-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 16px;
+  }
+  
+  .profile-avatar {
+    width: 80px;
+    height: 80px;
+    font-size: 32px;
+  }
+}

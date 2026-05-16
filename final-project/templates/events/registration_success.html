@@ -1,0 +1,72 @@
+{% extends "notifications/base.html" %}
+{% load static %}
+
+{% block title %}Registration Confirmed — Eventflow{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'events/main.css' %}"/>
+{% endblock %}
+
+{% block content %}
+
+<div class="success-wrap">
+  <div class="success-container">
+    
+    <!-- Success icon -->
+    <div class="success-icon">🎉</div>
+    
+    <!-- Success heading -->
+    <h1 class="success-title">Registration Confirmed!</h1>
+    
+    <!-- Event details -->
+    <div class="success-card">
+      <div class="event-info">
+        <h2 class="event-title">{{ event.title }}</h2>
+        <p class="event-meta">
+          📅 {{ event.start_date|date:"F j, Y \a\t H:i" }} — {{ event.end_date|date:"H:i" }}
+        </p>
+        {% if event.location %}
+          <p class="event-location">📍 {{ event.location }}</p>
+        {% endif %}
+      </div>
+      
+      <!-- Status badge -->
+      <div class="success-badge">
+        <span class="badge badge-success">Registered</span>
+        <p class="status-text">You're all set! You will receive updates about this event.</p>
+      </div>
+    </div>
+    
+    <!-- Action buttons -->
+    <div class="success-actions">
+      <a href="/events/{{ event.id }}/" class="btn btn-primary">
+        👁️ View Event Details
+      </a>
+      <a href="/events/my-registrations/" class="btn btn-ghost">
+        📋 My Registrations
+      </a>
+      <a href="/events/" class="btn btn-ghost">
+        ← Browse More Events
+      </a>
+    </div>
+    
+    <!-- Quick info -->
+    <div class="success-info">
+      <div class="info-box">
+        <div class="info-label">Organized By</div>
+        <div class="info-value">{{ event.organizer.username }}</div>
+      </div>
+      <div class="info-box">
+        <div class="info-label">Event Type</div>
+        <div class="info-value">{{ event.get_event_type_display }}</div>
+      </div>
+      <div class="info-box">
+        <div class="info-label">Capacity</div>
+        <div class="info-value">{{ event.registration_count }}/{{ event.max_attendees }}</div>
+      </div>
+    </div>
+    
+  </div>
+</div>
+
+{% endblock %}

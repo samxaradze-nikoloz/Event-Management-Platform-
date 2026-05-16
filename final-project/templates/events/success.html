@@ -1,0 +1,95 @@
+{% extends "notifications/base.html" %}
+{% load static %}
+
+{% block title %}Event Created — Eventflow{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'events/css/main.css' %}"/>
+{% endblock %}
+
+{% block content %}
+
+<div class="success-wrap">
+  <div class="success-container">
+    
+    <!-- Success icon -->
+    <div class="success-icon">✅</div>
+    
+    <!-- Success heading -->
+    <h1 class="success-title">Event Created Successfully!</h1>
+    
+    <!-- Event details -->
+    <div class="success-card">
+      <div class="event-info">
+        <h2 class="event-title">{{ event.title }}</h2>
+        <p class="event-meta">
+          📅 {{ event.start_date|date:"F j, Y \a\t H:i" }} — {{ event.end_date|date:"H:i" }}
+        </p>
+        {% if event.location %}
+          <p class="event-location">📍 {{ event.location }}</p>
+        {% endif %}
+        <p class="event-desc">{{ event.description|truncatechars:150 }}</p>
+      </div>
+      
+      <!-- Status badge -->
+      <div class="success-badge">
+        {% if event.status == 'published' %}
+          <span class="badge badge-published">Published</span>
+          <p class="status-text">Your event is live and visible to everyone!</p>
+        {% else %}
+          <span class="badge badge-draft">Draft</span>
+          <p class="status-text">Your event is saved as a draft. You can publish it later.</p>
+        {% endif %}
+      </div>
+    </div>
+    
+    <!-- Action buttons -->
+    <div class="success-actions">
+      {% if event.status == 'draft' %}
+        <a href="/events/{{ event.id }}/edit/" class="btn btn-primary">
+          ✏️ Edit Event
+        </a>
+        <a href="/events/{{ event.id }}/publish/" class="btn btn-success">
+          🚀 Publish Now
+        </a>
+      {% else %}
+        <a href="/events/{{ event.id }}/" class="btn btn-primary">
+          👁️ View Event
+        </a>
+      {% endif %}
+      <a href="/events/" class="btn btn-ghost">
+        ← Browse All Events
+      </a>
+    </div>
+    
+    <!-- Quick info -->
+    <div class="success-info">
+      <div class="info-box">
+        <div class="info-label">Max Attendees</div>
+        <div class="info-value">{{ event.max_attendees }}</div>
+      </div>
+      <div class="info-box">
+        <div class="info-label">Event Type</div>
+        <div class="info-value">{{ event.get_event_type_display }}</div>
+      </div>
+      <div class="info-box">
+        <div class="info-label">Status</div>
+        <div class="info-value">{{ event.get_status_display }}</div>
+      </div>
+    </div>
+    
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Auto-redirect to event detail after 5 seconds for published events
+  {% if event.status == 'published' %}
+  setTimeout(() => {
+    window.location.href = '/events/{{ event.id }}/';
+  }, 5000);
+  {% endif %}
+</script>
+{% endblock %}

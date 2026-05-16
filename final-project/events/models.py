@@ -67,6 +67,16 @@ class Event(models.Model):
         confirmed = self.registrations.filter(status='confirmed').count()
         return self.max_attendees == 0 or confirmed >= self.max_attendees
 
+    @property
+    def registration_count(self):
+        return self.registrations.filter(status='confirmed').count()
+
+    @property
+    def available_spots(self):
+        if self.max_attendees == 0:
+            return float('inf')
+        return max(0, self.max_attendees - self.registration_count)
+
 
 class EventMedia(models.Model):
     event = models.ForeignKey(

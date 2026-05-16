@@ -1,0 +1,106 @@
+{% extends "notifications/base.html" %}
+{% load static %}
+
+{% block title %}My Events — Eventflow{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'events/main.css' %}"/>
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">My Events</h1>
+    <p class="page-sub">Manage your published and draft events</p>
+  </div>
+  <a href="/events/create/" class="btn btn-primary">+ Create Event</a>
+</div>
+
+<!-- Stats -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-value">{{ events.count }}</div>
+    <div class="stat-label">Total Events</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value">{{ published_count }}</div>
+    <div class="stat-label">Published</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value">{{ draft_count }}</div>
+    <div class="stat-label">Drafts</div>
+  </div>
+</div>
+
+<!-- Events list -->
+{% if events %}
+  <div class="events-manage-list">
+    {% for event in events %}
+      <div class="event-manage-card">
+        <div class="event-manage-header">
+          <div>
+            <h3 class="event-manage-title">{{ event.title }}</h3>
+            <div class="event-manage-meta">
+              <span class="badge badge-{{ event.status }}">{{ event.status|title }}</span>
+              <span class="badge badge-{{ event.event_type }}">{{ event.event_type|title }}</span>
+              {% if event.category %}
+                <span class="tag">{{ event.category.name }}</span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        
+        <div class="event-manage-content">
+          <p class="event-manage-desc">{{ event.description|truncatechars:150 }}</p>
+          
+          <div class="event-manage-stats">
+            <div class="stat">
+              <span class="stat-label">📅 Start Date</span>
+              <span class="stat-value">{{ event.start_date|date:"M d, Y · H:i" }}</span>
+            </div>
+            <div class="stat">
+              <span class="stat-label">👥 Attendees</span>
+              <span class="stat-value">{{ event.registration_count }} / {{ event.max_attendees }}</span>
+            </div>
+            <div class="stat">
+              <span class="stat-label">📈 Fill Rate</span>
+              <span class="stat-value">{% widthratio event.registration_count event.max_attendees 100 %}%</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="event-manage-footer">
+          <a href="/events/{{ event.id }}/" class="btn btn-primary btn-sm">
+            👁️ View
+          </a>
+          <a href="/events/{{ event.id }}/edit/" class="btn btn-ghost btn-sm">
+            ✏️ Edit
+          </a>
+          <form method="post" action="/events/{{ event.id }}/delete/"
+                style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger btn-sm"
+                    onclick="return confirm('Delete this event?')">
+              🗑️ Delete
+            </button>
+          </form>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+  
+{% else %}
+  <div class="empty-state">
+    <div class="empty-icon">🚀</div>
+    <h3>No events yet</h3>
+    <p>You haven't created any events. Start now and share your event with the community!</p>
+    <a href="/events/create/" class="btn btn-primary" style="margin-top:16px">Create Event</a>
+  </div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'events/js/main.js' %}"></script>
+{% endblock %}

@@ -1,7 +1,7 @@
 {% extends "notifications/base.html" %}
 {% load static %}
 
-{% block title %}Create Event — Eventflow{% endblock %}
+{% block title %}Edit Event — Eventflow{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'events/main.css' %}"/>
@@ -13,12 +13,12 @@
 <div class="create-wrap">
 
   <div class="create-header">
-    <a href="/events/" class="back-link">← Back to events</a>
-    <h1 class="page-title">Create New Event</h1>
-    <p class="page-sub">Fill in the details below to publish your event</p>
+    <a href="/events/{{ event.id }}/" class="back-link">← Back to event</a>
+    <h1 class="page-title">Edit Event</h1>
+    <p class="page-sub">Update your event details</p>
   </div>
 
-  <form method="post" action="/events/create/" enctype="multipart/form-data">
+  <form method="post" action="/events/{{ event.id }}/edit/" enctype="multipart/form-data">
     {% csrf_token %}
 
     <div class="create-grid">
@@ -33,13 +33,13 @@
           <div class="form-group">
             <label class="form-label" for="title">Event Title *</label>
             <input class="form-control" type="text" id="title" name="title"
-                   placeholder="e.g. PyCon Georgia 2025" required/>
+                   value="{{ event.title }}" required/>
           </div>
 
           <div class="form-group">
             <label class="form-label" for="description">Description *</label>
             <textarea class="form-control" id="description" name="description"
-                      rows="5" placeholder="Describe your event in detail..." required></textarea>
+                      rows="5" required>{{ event.description }}</textarea>
             <div class="form-hint">Share what makes your event special</div>
           </div>
 
@@ -49,15 +49,17 @@
               <select class="form-control" id="category" name="category">
                 <option value="">— No category —</option>
                 {% for cat in categories %}
-                  <option value="{{ cat.id }}">{{ cat.name }}</option>
+                  <option value="{{ cat.id }}" {% if event.category.id == cat.id %}selected{% endif %}>
+                    {{ cat.name }}
+                  </option>
                 {% endfor %}
               </select>
             </div>
             <div class="form-group">
               <label class="form-label" for="status">Status *</label>
               <select class="form-control" id="status" name="status" required>
-                <option value="draft">Draft</option>
-                <option value="published" selected>Published</option>
+                <option value="draft" {% if event.status == 'draft' %}selected{% endif %}>Draft</option>
+                <option value="published" {% if event.status == 'published' %}selected{% endif %}>Published</option>
               </select>
             </div>
           </div>
@@ -71,11 +73,13 @@
           <div class="form-row">
             <div class="form-group">
               <label class="form-label" for="start_date">Start Date & Time *</label>
-              <input class="form-control" type="datetime-local" id="start_date" name="start_date" required/>
+              <input class="form-control" type="datetime-local" id="start_date" name="start_date"
+                     value="{{ event.start_date|date:'Y-m-dTH:i' }}" required/>
             </div>
             <div class="form-group">
               <label class="form-label" for="end_date">End Date & Time *</label>
-              <input class="form-control" type="datetime-local" id="end_date" name="end_date" required/>
+              <input class="form-control" type="datetime-local" id="end_date" name="end_date"
+                     value="{{ event.end_date|date:'Y-m-dTH:i' }}" required/>
             </div>
           </div>
 
@@ -83,14 +87,14 @@
             <label class="form-label">Event Type *</label>
             <div class="type-toggle">
               <label class="type-option">
-                <input type="radio" name="event_type" value="online" checked/>
+                <input type="radio" name="event_type" value="online" {% if event.event_type == 'online' %}checked{% endif %}/>
                 <span class="type-label">
                   <span class="type-icon">🖥️</span>
                   <span class="type-text">Online</span>
                 </span>
               </label>
               <label class="type-option">
-                <input type="radio" name="event_type" value="offline"/>
+                <input type="radio" name="event_type" value="offline" {% if event.event_type == 'offline' %}checked{% endif %}/>
                 <span class="type-label">
                   <span class="type-icon">📍</span>
                   <span class="type-text">Offline</span>
@@ -99,10 +103,10 @@
             </div>
           </div>
 
-          <div class="form-group" id="location-group" style="display:none;">
+          <div class="form-group" id="location-group" style="{% if event.event_type == 'online' %}display:none;{% endif %}">
             <label class="form-label" for="location">Location</label>
             <input class="form-control" type="text" id="location" name="location"
-                   placeholder="e.g. Tbilisi, Georgia"/>
+                   value="{{ event.location|default:'' }}"/>
           </div>
 
         </div>
@@ -113,7 +117,8 @@
           <div class="tags-wrap" id="tags-wrap">
             {% for tag in tags %}
               <label class="tag-check">
-                <input type="checkbox" name="tags" value="{{ tag.id }}"/>
+                <input type="checkbox" name="tags" value="{{ tag.id }}"
+                       {% if tag in event.tags.all %}checked{% endif %}/>
                 <span class="tag-label">{{ tag.name }}</span>
               </label>
             {% endfor %}
@@ -132,17 +137,25 @@
           <div class="form-group">
             <label class="form-label" for="max_attendees">Max Attendees *</label>
             <input class="form-control" type="number" id="max_attendees" name="max_attendees"
-                   min="1" placeholder="e.g. 100" required value="100"/>
+                   min="1" value="{{ event.max_attendees }}" required/>
           </div>
           <div class="capacity-preview">
-            <span class="cap-num" id="cap-display">100</span>
+            <span class="cap-num" id="cap-display">{{ event.max_attendees }}</span>
             <span class="cap-label">spots available</span>
+          </div>
+          <div style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border); font-size:12px; color:var(--muted);">
+            Current registrations: <strong>{{ event.registration_count }}</strong>
           </div>
         </div>
 
         <!-- Media -->
         <div class="card">
           <div class="card-title">Cover Image</div>
+          {% if event.media.all %}
+            <div style="margin-bottom:12px;">
+              <img src="{{ event.media.first.file.url }}" alt="Event cover" style="width:100%;border-radius:8px;"/>
+            </div>
+          {% endif %}
           <label class="upload-zone" for="media-input" id="upload-zone">
             <span class="upload-icon">📁</span>
             <span class="upload-text" id="upload-text">Click to upload</span>
@@ -155,16 +168,12 @@
 
         <!-- Submit -->
         <div class="card">
-          <button type="submit" name="action" value="publish"
-                  class="btn btn-primary btn-full">
-            🚀 Publish Event
+          <button type="submit" class="btn btn-primary btn-full">
+            ✅ Save Changes
           </button>
-          <button type="submit" name="action" value="draft"
-                  class="btn btn-ghost btn-full" style="margin-top:10px;">
-            💾 Save as Draft
-          </button>
-          <hr class="divider"/>
-          <a href="/events/" class="btn btn-ghost btn-full">Cancel</a>
+          <a href="/events/{{ event.id }}/" class="btn btn-ghost btn-full" style="margin-top:10px;">
+            Cancel
+          </a>
         </div>
 
       </div>
@@ -218,7 +227,5 @@
   eventTypeRadios.forEach(radio => {
     radio.addEventListener('change', toggleLocationField);
   });
-  
-  toggleLocationField();
 </script>
 {% endblock %}
