@@ -1,0 +1,35 @@
+{% extends "notifications/base.html" %}
+{% load static %}
+
+{% block title %}Registered! — Eventflow{% endblock %}
+
+{% block content %}
+<div style="max-width:520px;margin:60px auto;text-align:center;">
+  <div style="font-size:64px;margin-bottom:20px;">🎉</div>
+  <h1 style="font-family:var(--font-display);font-size:28px;font-weight:800;margin-bottom:10px;">
+    You're registered!
+  </h1>
+  <p style="color:var(--muted);font-size:15px;margin-bottom:28px;">
+    You have successfully registered for <strong>{{ event.title }}</strong>.
+    A confirmation email has been sent to you.
+  </p>
+
+  <div class="card" style="text-align:left;margin-bottom:24px;">
+    <div class="card-title">Event details</div>
+    <div style="display:flex;flex-direction:column;gap:10px;font-size:14px;color:var(--muted);">
+      <span>📅 {{ event.start_date|date:"F j, Y · g:i A" }}</span>
+      {% if event.location %}<span>📌 {{ event.location }}</span>{% endif %}
+      <span>👤 Organized by {{ event.organizer.username }}</span>
+      <span>
+        Status:
+        <span class="badge badge-{{ registration.status }}">{{ registration.status }}</span>
+      </span>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:12px;justify-content:center;">
+    <a href="/events/{{ event.id }}/" class="btn btn-primary">View event</a>
+    <a href="/events/my-registrations/" class="btn btn-ghost">My registrations</a>
+  </div>
+</div>
+{% endblock %}

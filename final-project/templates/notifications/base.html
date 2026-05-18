@@ -4,116 +4,147 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-
   <title>{% block title %}Eventflow{% endblock %}</title>
-
-  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet"/>
-
-  <!-- Main CSS -->
-  <link rel="stylesheet" href="{% static 'notifications/main.css' %}">
-
+  <link rel="stylesheet" href="{% static 'notifications/main.css' %}"/>
   {% block extra_css %}{% endblock %}
 </head>
-
 <body>
 
-  <!-- Navbar -->
-  <nav class="navbar">
-    <div class="nav-inner">
+<!-- ── Navbar ── -->
+<nav class="navbar">
+  <div class="nav-inner">
+    <a class="logo" href="/events/">Event<span>flow</span></a>
 
-      <a class="logo" href="/events/">
-        Event<span>flow</span>
-      </a>
+    <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
 
-      <ul class="nav-links">
+    <ul class="nav-links" id="nav-links">
+      <li><a href="/events/" class="nav-link">Browse Events</a></li>
 
-        <li>
-          <a href="/events/">Browse Events</a>
-        </li>
-
-        {% if user.is_authenticated %}
-
-          {% if user.role == 'organizer' %}
-            <li>
-              <a href="/events/create/">
-                + Create Event
-              </a>
-            </li>
-          {% endif %}
-
-          <li>
-            <a href="/accounts/me/">My Profile</a>
-          </li>
-
-          <li>
-            <form method="post" action="/accounts/logout/" style="display:inline;">
-              {% csrf_token %}
-              <button type="submit" class="btn-link">
-                Logout
-              </button>
-            </form>
-          </li>
-
+      {% if user.is_authenticated %}
+        {% if user.role == 'organizer' %}
+          <li><a href="/events/my-events/" class="nav-link">My Events</a></li>
+          <li><a href="/events/create/" class="nav-link nav-create">+ Create Event</a></li>
         {% else %}
-
-          <li>
-            <a href="/accounts/login/">Login</a>
-          </li>
-
-          <li>
-            <a href="/accounts/register/" class="btn-nav">
-              Register
-            </a>
-          </li>
-
+          <li><a href="/events/my-registrations/" class="nav-link">My Tickets</a></li>
         {% endif %}
 
-      </ul>
-    </div>
-  </nav>
+        <li class="nav-divider"></li>
 
-  <!-- Main Content -->
-  <main class="main-content">
-
-    {% if messages %}
-      <div class="messages">
-
-        {% for message in messages %}
-          <div class="toast toast-{{ message.tags }}">
-            {{ message }}
+        <li class="nav-user">
+          <a href="/accounts/me/" class="nav-avatar" title="{{ user.username }}">
+            <span class="nav-avatar-letter">{{ user.username|first|upper }}</span>
+          </a>
+          <div class="nav-dropdown">
+            <div class="nav-dropdown-header">
+              <strong>{{ user.username }}</strong>
+              <span class="nav-role-badge">{{ user.role }}</span>
+            </div>
+            <a href="/accounts/me/" class="nav-dropdown-item">👤 My Profile</a>
+            {% if user.role == 'organizer' %}
+              <a href="/events/my-events/" class="nav-dropdown-item">📋 My Events</a>
+            {% else %}
+              <a href="/events/my-registrations/" class="nav-dropdown-item">🎟️ My Registrations</a>
+            {% endif %}
+            <div class="nav-dropdown-divider"></div>
+            <form method="post" action="/accounts/logout/">
+              {% csrf_token %}
+              <button type="submit" class="nav-dropdown-item nav-logout">🚪 Logout</button>
+            </form>
           </div>
-        {% endfor %}
+        </li>
 
-      </div>
-    {% endif %}
+      {% else %}
+        <li><a href="/accounts/login/" class="nav-link">Login</a></li>
+        <li><a href="/accounts/register/" class="btn btn-primary btn-sm">Register</a></li>
+      {% endif %}
+    </ul>
+  </div>
+</nav>
 
-    {% block content %}{% endblock %}
+<!-- ── Global search + category bar ── -->
+<div class="global-search-wrap" id="global-search-wrap">
+  <div class="global-search-inner">
 
-  </main>
-
-  <!-- Footer -->
-  <footer class="footer">
-    <div class="footer-inner">
-
-      <span class="logo-sm">
-        Event<span>flow</span>
-      </span>
-
-      <span class="footer-copy">
-        © 2025 All rights reserved.
-      </span>
-
+    <!-- Search input -->
+    <div class="global-search-box">
+      <span class="gsearch-icon">🔍</span>
+      <input
+        type="text"
+        id="global-search-input"
+        class="gsearch-input"
+        placeholder="Search events..."
+        autocomplete="off"
+        spellcheck="false"
+      />
+      <button class="gsearch-clear" id="gsearch-clear">✕</button>
     </div>
-  </footer>
 
-  <!-- Main JS -->
-  <script src="{% static 'notifications/main.js' %}"></script>
+    <!-- Type pills -->
+    <div class="gsearch-pills">
+      <button class="gpill active" data-type="">All</button>
+      <button class="gpill" data-type="online">🖥️ Online</button>
+      <button class="gpill" data-type="offline">📍 Offline</button>
+    </div>
 
-  {% block extra_js %}{% endblock %}
+    <!-- Category chips — loaded via JS from API -->
+    <div class="gsearch-chips" id="gsearch-chips">
+      <button class="gchip active" data-cat="">All categories</button>
+      <!-- populated by JS -->
+    </div>
+
+    <!-- Live results dropdown -->
+    <div class="gsearch-results" id="gsearch-results"></div>
+
+  </div>
+</div>
+
+<!-- ── Flash messages ── -->
+{% if messages %}
+  <div class="messages-wrap">
+    {% for message in messages %}
+      <div class="toast toast-{{ message.tags }}">
+        <span class="toast-icon">
+          {% if message.tags == 'success' %}✓{% elif message.tags == 'error' %}✕{% else %}!{% endif %}
+        </span>
+        {{ message }}
+        <button class="toast-close" onclick="this.parentElement.remove()">×</button>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<!-- ── Page content ── -->
+<main class="main-content">
+  {% block content %}{% endblock %}
+</main>
+
+<!-- ── Footer ── -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-left">
+      <a class="logo-sm" href="/events/">Event<span>flow</span></a>
+      <p class="footer-tagline">Discover and manage events.</p>
+    </div>
+    <div class="footer-links">
+      <a href="/events/">Browse</a>
+      <a href="/api/schema/swagger-ui/">API Docs</a>
+      {% if user.is_authenticated %}
+        <a href="/accounts/me/">Profile</a>
+      {% else %}
+        <a href="/accounts/register/">Register</a>
+      {% endif %}
+    </div>
+    <span class="footer-copy">© 2025 Eventflow</span>
+  </div>
+</footer>
+
+<script src="{% static 'notifications/js/main.js' %}"></script>
+{% block extra_js %}{% endblock %}
 
 </body>
 </html>

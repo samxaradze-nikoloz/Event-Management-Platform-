@@ -42,4 +42,12 @@ def logout_view(request):
 def me_view(request):
     if not request.user.is_authenticated:
         return redirect('/accounts/login/')
+    if request.method == 'POST':
+        request.user.email = request.POST.get('email', request.user.email)
+        request.user.bio   = request.POST.get('bio', request.user.bio)
+        if request.FILES.get('avatar'):
+            request.user.avatar = request.FILES['avatar']
+        request.user.save()
+        messages.success(request, 'Profile updated!')
+        return redirect('/accounts/me/')
     return render(request, 'accounts/me.html', {'user': request.user})

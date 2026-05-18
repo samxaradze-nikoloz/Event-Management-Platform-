@@ -4,60 +4,80 @@
 {% block title %}My Profile — Eventflow{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'accounts/css/main.css' %}">
+<link rel="stylesheet" href="{% static 'accounts/css/main.css' %}"/>
 {% endblock %}
 
 {% block content %}
-<div class="auth-wrap">
+<div class="profile-wrap">
 
-  <div class="auth-card">
+  <div class="profile-header">
+    <div class="profile-avatar">{{ user.username|first|upper }}</div>
+    <div class="profile-info">
+      <h1 class="profile-name">{{ user.username }}</h1>
+      <p class="profile-email">{{ user.email }}</p>
+      <span class="badge badge-{{ user.role }}">{{ user.role }}</span>
+    </div>
+  </div>
 
-    <div class="auth-header">
-      <h1 class="auth-title">My Profile</h1>
-      <p class="auth-sub">Manage your Eventflow account</p>
+  <div class="profile-grid">
+
+    <!-- Left: edit form -->
+    <div class="card">
+      <div class="card-title">Edit profile</div>
+      <form method="post" action="/accounts/me/" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-group">
+          <label class="form-label">Username</label>
+          <input class="form-control" type="text" value="{{ user.username }}" disabled/>
+          <div class="form-hint">Username cannot be changed.</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="email">Email</label>
+          <input class="form-control" type="email" id="email" name="email" value="{{ user.email }}"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="bio">Bio</label>
+          <textarea class="form-control" id="bio" name="bio" rows="3"
+                    placeholder="Tell us about yourself...">{{ user.bio|default:'' }}</textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="avatar">Avatar</label>
+          {% if user.avatar %}
+            <img src="{{ user.avatar.url }}" alt="avatar"
+                 style="width:60px;height:60px;border-radius:50%;object-fit:cover;margin-bottom:8px;display:block;"/>
+          {% endif %}
+          <input class="form-control" type="file" id="avatar" name="avatar" accept="image/*"/>
+        </div>
+        <button type="submit" class="btn btn-primary">Save changes</button>
+      </form>
     </div>
 
-    <div class="profile-section">
-
-      <div class="form-group">
-        <label class="form-label">Username</label>
-        <div class="form-control">
-          {{ user.username }}
+    <!-- Right: quick links -->
+    <div>
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-title">My activity</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <a href="/events/my-registrations/" class="btn btn-ghost btn-full">🎟️ My registrations</a>
+          {% if user.role == 'organizer' %}
+            <a href="/events/my-events/" class="btn btn-ghost btn-full">📋 My events</a>
+            <a href="/events/create/" class="btn btn-primary btn-full">+ Create event</a>
+          {% endif %}
         </div>
       </div>
 
-      <div class="form-group">
-        <label class="form-label">Email</label>
-        <div class="form-control">
-          {{ user.email }}
-        </div>
+      <div class="card">
+        <div class="card-title">Account</div>
+        <form method="post" action="/accounts/logout/">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger btn-full">Logout</button>
+        </form>
       </div>
-
-      <div class="form-group">
-        <label class="form-label">Role</label>
-        <div class="form-control">
-          {{ user.role|title }}
-        </div>
-      </div>
-
-      {% if user.bio %}
-      <div class="form-group">
-        <label class="form-label">Bio</label>
-        <div class="form-control" style="min-height:120px;">
-          {{ user.bio }}
-        </div>
-      </div>
-      {% endif %}
-
-      <div style="margin-top:24px;">
-        <a href="/events/" class="btn btn-primary">
-          Browse Events
-        </a>
-      </div>
-
     </div>
 
   </div>
-
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'accounts/js/main.js' %}"></script>
 {% endblock %}

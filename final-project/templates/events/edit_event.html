@@ -1,11 +1,11 @@
 {% extends "notifications/base.html" %}
 {% load static %}
 
-{% block title %}Edit Event — Eventflow{% endblock %}
+{% block title %}Edit {{ event.title }} — Eventflow{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'events/main.css' %}"/>
-<link rel="stylesheet" href="{% static 'events/create.css' %}"/>
+<link rel="stylesheet" href="{% static 'events/css/main.css' %}"/>
+<link rel="stylesheet" href="{% static 'events/css/create.css' %}"/>
 {% endblock %}
 
 {% block content %}
@@ -14,8 +14,8 @@
 
   <div class="create-header">
     <a href="/events/{{ event.id }}/" class="back-link">← Back to event</a>
-    <h1 class="page-title">Edit Event</h1>
-    <p class="page-sub">Update your event details</p>
+    <h1 class="page-title">Edit event</h1>
+    <p class="page-sub">Update the details for "{{ event.title }}"</p>
   </div>
 
   <form method="post" action="/events/{{ event.id }}/edit/" enctype="multipart/form-data">
@@ -23,15 +23,13 @@
 
     <div class="create-grid">
 
-      <!-- LEFT: main fields -->
       <div class="create-main">
 
-        <!-- Basic info -->
-        <div class="card">
-          <div class="card-title">Basic Information</div>
+        <div class="card" style="margin-bottom:20px;">
+          <div class="card-title">Basic information</div>
 
           <div class="form-group">
-            <label class="form-label" for="title">Event Title *</label>
+            <label class="form-label" for="title">Event title *</label>
             <input class="form-control" type="text" id="title" name="title"
                    value="{{ event.title }}" required/>
           </div>
@@ -40,7 +38,6 @@
             <label class="form-label" for="description">Description *</label>
             <textarea class="form-control" id="description" name="description"
                       rows="5" required>{{ event.description }}</textarea>
-            <div class="form-hint">Share what makes your event special</div>
           </div>
 
           <div class="form-row">
@@ -56,45 +53,46 @@
               </select>
             </div>
             <div class="form-group">
-              <label class="form-label" for="status">Status *</label>
-              <select class="form-control" id="status" name="status" required>
-                <option value="draft" {% if event.status == 'draft' %}selected{% endif %}>Draft</option>
-                <option value="published" {% if event.status == 'published' %}selected{% endif %}>Published</option>
+              <label class="form-label" for="status">Status</label>
+              <select class="form-control" id="status" name="status">
+                <option value="draft"      {% if event.status == 'draft'      %}selected{% endif %}>Draft</option>
+                <option value="published"  {% if event.status == 'published'  %}selected{% endif %}>Published</option>
+                <option value="cancelled"  {% if event.status == 'cancelled'  %}selected{% endif %}>Cancelled</option>
               </select>
             </div>
           </div>
-
         </div>
 
-        <!-- Date & Location -->
-        <div class="card">
-          <div class="card-title">Date & Location</div>
+        <div class="card" style="margin-bottom:20px;">
+          <div class="card-title">Date & location</div>
 
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label" for="start_date">Start Date & Time *</label>
+              <label class="form-label" for="start_date">Start date & time *</label>
               <input class="form-control" type="datetime-local" id="start_date" name="start_date"
-                     value="{{ event.start_date|date:'Y-m-dTH:i' }}" required/>
+                     value="{{ event.start_date|date:'Y-m-d' }}T{{ event.start_date|date:'H:i' }}" required/>
             </div>
             <div class="form-group">
-              <label class="form-label" for="end_date">End Date & Time *</label>
+              <label class="form-label" for="end_date">End date & time *</label>
               <input class="form-control" type="datetime-local" id="end_date" name="end_date"
-                     value="{{ event.end_date|date:'Y-m-dTH:i' }}" required/>
+                     value="{{ event.end_date|date:'Y-m-d' }}T{{ event.end_date|date:'H:i' }}" required/>
             </div>
           </div>
 
           <div class="form-group">
-            <label class="form-label">Event Type *</label>
+            <label class="form-label">Event type</label>
             <div class="type-toggle">
               <label class="type-option">
-                <input type="radio" name="event_type" value="online" {% if event.event_type == 'online' %}checked{% endif %}/>
+                <input type="radio" name="event_type" value="online"
+                       {% if event.event_type == 'online' %}checked{% endif %}/>
                 <span class="type-label">
                   <span class="type-icon">🖥️</span>
                   <span class="type-text">Online</span>
                 </span>
               </label>
               <label class="type-option">
-                <input type="radio" name="event_type" value="offline" {% if event.event_type == 'offline' %}checked{% endif %}/>
+                <input type="radio" name="event_type" value="offline"
+                       {% if event.event_type == 'offline' %}checked{% endif %}/>
                 <span class="type-label">
                   <span class="type-icon">📍</span>
                   <span class="type-text">Offline</span>
@@ -103,18 +101,16 @@
             </div>
           </div>
 
-          <div class="form-group" id="location-group" style="{% if event.event_type == 'online' %}display:none;{% endif %}">
+          <div class="form-group">
             <label class="form-label" for="location">Location</label>
             <input class="form-control" type="text" id="location" name="location"
-                   value="{{ event.location|default:'' }}"/>
+                   value="{{ event.location|default:'' }}" placeholder="e.g. Tbilisi / Zoom link"/>
           </div>
-
         </div>
 
-        <!-- Tags -->
-        <div class="card">
+        <div class="card" style="margin-bottom:20px;">
           <div class="card-title">Tags</div>
-          <div class="tags-wrap" id="tags-wrap">
+          <div class="tags-wrap">
             {% for tag in tags %}
               <label class="tag-check">
                 <input type="checkbox" name="tags" value="{{ tag.id }}"
@@ -123,62 +119,40 @@
               </label>
             {% endfor %}
           </div>
-          <div class="form-hint">Select all that apply</div>
         </div>
 
       </div>
 
-      <!-- RIGHT: sidebar -->
       <div class="create-sidebar">
 
-        <!-- Capacity -->
-        <div class="card">
+        <div class="card" style="margin-bottom:16px;">
           <div class="card-title">Capacity</div>
           <div class="form-group">
-            <label class="form-label" for="max_attendees">Max Attendees *</label>
+            <label class="form-label" for="max_attendees">Max attendees *</label>
             <input class="form-control" type="number" id="max_attendees" name="max_attendees"
                    min="1" value="{{ event.max_attendees }}" required/>
           </div>
-          <div class="capacity-preview">
-            <span class="cap-num" id="cap-display">{{ event.max_attendees }}</span>
-            <span class="cap-label">spots available</span>
-          </div>
-          <div style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border); font-size:12px; color:var(--muted);">
-            Current registrations: <strong>{{ event.registration_count }}</strong>
-          </div>
         </div>
 
-        <!-- Media -->
-        <div class="card">
-          <div class="card-title">Cover Image</div>
-          {% if event.media.all %}
-            <div style="margin-bottom:12px;">
-              <img src="{{ event.media.first.file.url }}" alt="Event cover" style="width:100%;border-radius:8px;"/>
-            </div>
+        <div class="card" style="margin-bottom:16px;">
+          <div class="card-title">Cover image</div>
+          {% if event.media.first %}
+            <img src="{{ event.media.first.file.url }}" alt="current"
+                 style="width:100%;border-radius:8px;margin-bottom:10px;"/>
+            <p class="form-hint">Upload a new image to replace the current one.</p>
           {% endif %}
-          <label class="upload-zone" for="media-input" id="upload-zone">
-            <span class="upload-icon">📁</span>
-            <span class="upload-text" id="upload-text">Click to upload</span>
-            <span class="upload-hint">PNG, JPG up to 5MB</span>
-          </label>
-          <input type="file" id="media-input" name="media" accept="image/*"
-                 style="display:none;" onchange="previewImage(this)"/>
-          <img id="img-preview" src="" alt="" style="display:none;width:100%;border-radius:8px;margin-top:10px;"/>
+          <input type="file" name="media" accept="image/*" class="form-control"/>
         </div>
 
-        <!-- Submit -->
         <div class="card">
-          <button type="submit" class="btn btn-primary btn-full">
-            ✅ Save Changes
+          <button type="submit" class="btn btn-primary btn-full" style="margin-bottom:10px;">
+            💾 Save changes
           </button>
-          <a href="/events/{{ event.id }}/" class="btn btn-ghost btn-full" style="margin-top:10px;">
-            Cancel
-          </a>
+          <a href="/events/{{ event.id }}/" class="btn btn-ghost btn-full">Cancel</a>
         </div>
 
       </div>
     </div>
-
   </form>
 
 </div>
@@ -186,46 +160,6 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
-  // Update capacity preview
-  const maxAttendeesInput = document.getElementById('max_attendees');
-  const capDisplay = document.getElementById('cap-display');
-  
-  function updateCapacity() {
-    capDisplay.textContent = maxAttendeesInput.value || '—';
-  }
-  
-  maxAttendeesInput.addEventListener('input', updateCapacity);
-  
-  // Preview image
-  function previewImage(input) {
-    const preview = document.getElementById('img-preview');
-    const uploadText = document.getElementById('upload-text');
-    
-    if (input.files && input.files[0]) {
-      const reader = new FileReader();
-      
-      reader.onload = function(e) {
-        preview.src = e.target.result;
-        preview.style.display = 'block';
-        uploadText.textContent = input.files[0].name;
-      };
-      
-      reader.readAsDataURL(input.files[0]);
-    }
-  }
-  
-  // Toggle location field based on event type
-  const eventTypeRadios = document.querySelectorAll('input[name="event_type"]');
-  const locationGroup = document.getElementById('location-group');
-  
-  function toggleLocationField() {
-    const isOffline = document.querySelector('input[name="event_type"]:checked').value === 'offline';
-    locationGroup.style.display = isOffline ? 'block' : 'none';
-  }
-  
-  eventTypeRadios.forEach(radio => {
-    radio.addEventListener('change', toggleLocationField);
-  });
-</script>
+<script src="{% static 'events/js/main.js' %}"></script>
+<script src="{% static 'events/js/create.js' %}"></script>
 {% endblock %}

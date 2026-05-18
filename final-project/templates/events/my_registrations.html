@@ -4,7 +4,7 @@
 {% block title %}My Registrations — Eventflow{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'events/main.css' %}"/>
+<link rel="stylesheet" href="{% static 'events/css/main.css' %}"/>
 {% endblock %}
 
 {% block content %}
@@ -12,76 +12,59 @@
 <div class="page-header">
   <div>
     <h1 class="page-title">My Registrations</h1>
-    <p class="page-sub">Events you've registered for</p>
+    <p class="page-sub">{{ total_events }} event{{ total_events|pluralize }} registered</p>
   </div>
-  <a href="/events/" class="btn btn-ghost">← Browse Events</a>
+  <a href="/events/" class="btn btn-ghost">Browse more events</a>
 </div>
 
-<!-- Stats -->
-<div class="stats-grid">
-  <div class="stat-card">
-    <div class="stat-value">{{ total_events }}</div>
-    <div class="stat-label">Total Registrations</div>
-  </div>
-</div>
-
-<!-- Registrations list -->
 {% if registrations %}
-  <div class="registrations-list">
-    {% for registration in registrations %}
-      <div class="registration-card">
-        <div class="registration-header">
-          <div>
-            <h3 class="registration-title">
-              <a href="/events/{{ registration.event.id }}/">{{ registration.event.title }}</a>
-            </h3>
-            <p class="registration-date">
-              Registered on {{ registration.registered_at|date:"M d, Y" }}
-            </p>
-          </div>
-          <span class="badge badge-{{ registration.status }}">{{ registration.status }}</span>
-        </div>
-        
-        <div class="registration-content">
-          <p class="registration-desc">{{ registration.event.description|truncatechars:150 }}</p>
-          
-          <div class="registration-meta">
-            <span>📅 {{ registration.event.start_date|date:"F j, Y \a\t H:i" }}</span>
-            {% if registration.event.location %}
-              <span>📍 {{ registration.event.location }}</span>
-            {% endif %}
-            <span>👤 {{ registration.event.organizer.username }}</span>
-          </div>
-        </div>
-        
-        <div class="registration-footer">
-          <a href="/events/{{ registration.event.id }}/" class="btn btn-primary btn-sm">
-            View Event
-          </a>
-          <form method="post" action="/events/{{ registration.event.id }}/registrations/{{ registration.id }}/cancel/"
-                style="display:inline;">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-danger btn-sm"
-                    onclick="return confirm('Cancel this registration?')">
-              Cancel
-            </button>
-          </form>
-        </div>
-      </div>
-    {% endfor %}
+  <div class="card">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Event</th>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Registered</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for reg in registrations %}
+            <tr>
+              <td>
+                <a href="/events/{{ reg.event.id }}/" style="font-weight:500;color:var(--text);text-decoration:none;">
+                  {{ reg.event.title }}
+                </a>
+              </td>
+              <td style="color:var(--muted);font-size:13px;">{{ reg.event.start_date|date:"M d, Y" }}</td>
+              <td><span class="badge badge-{{ reg.event.event_type }}">{{ reg.event.event_type }}</span></td>
+              <td><span class="badge badge-{{ reg.status }}">{{ reg.status }}</span></td>
+              <td style="color:var(--muted);font-size:13px;">{{ reg.registered_at|date:"M d, Y" }}</td>
+              <td>
+                {% if reg.status == 'confirmed' %}
+                  <form method="post" action="/events/{{ reg.event.id }}/registrations/{{ reg.id }}/cancel/">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-sm"
+                            onclick="return confirm('Cancel registration?')">Cancel</button>
+                  </form>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
-  
 {% else %}
   <div class="empty-state">
-    <div class="empty-icon">🎪</div>
+    <div class="empty-icon">🎟️</div>
     <h3>No registrations yet</h3>
-    <p>You haven't registered for any events. Start exploring and find one that interests you!</p>
-    <a href="/events/" class="btn btn-primary" style="margin-top:16px">Browse Events</a>
+    <p>You haven't registered for any events.</p>
+    <a href="/events/" class="btn btn-primary" style="margin-top:16px;">Browse events</a>
   </div>
 {% endif %}
 
-{% endblock %}
-
-{% block extra_js %}
-<script src="{% static 'events/js/main.js' %}"></script>
 {% endblock %}
